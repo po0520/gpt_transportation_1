@@ -1,0 +1,2149 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>生物體內的運輸｜五關卡互動遊戲（明亮版）</title>
+  <style>
+    :root{
+      --bg:#f5f7ff;
+      --bg2:#ffffff;
+      --card:#ffffff;
+      --card2:#f2f5ff;
+      --text:#0f172a;
+      --muted:#475569;
+      --good:#16a34a;
+      --bad:#e11d48;
+      --warn:#f59e0b;
+      --line:#dbe2ff;
+      --btn:#2563eb;
+      --btn2:#e6ecff;
+      --shadow:0 14px 30px rgba(2,6,23,.10);
+      --radius:18px;
+      --radius2:14px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background:
+        radial-gradient(1100px 700px at 15% 10%, rgba(37,99,235,.18) 0%, rgba(37,99,235,0) 60%),
+        radial-gradient(1000px 650px at 90% 12%, rgba(34,197,94,.16) 0%, rgba(34,197,94,0) 60%),
+        linear-gradient(180deg, var(--bg), #ffffff);
+      color:var(--text);
+      min-height:100vh;
+    }
+    header{
+      position:sticky; top:0; z-index:20;
+      backdrop-filter: blur(10px);
+      background: rgba(245,247,255,.78);
+      border-bottom:1px solid rgba(15,23,42,.08);
+    }
+    .wrap{max-width:1100px; margin:0 auto; padding:14px 16px;}
+    .top{display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap;}
+    .brand{display:flex; gap:12px; align-items:center;}
+    .badge{
+      width:42px; height:42px; border-radius:14px;
+      background: linear-gradient(135deg, #2563eb, #22c55e);
+      box-shadow: var(--shadow);
+      display:grid; place-items:center;
+      font-weight:900; color:white;
+    }
+    h1{font-size:18px; margin:0;}
+    .sub{font-size:12px; color:var(--muted); margin-top:2px}
+    .controls{display:flex; gap:10px; flex-wrap:wrap}
+    button{
+      border:0; cursor:pointer;
+      color:var(--text);
+      background:var(--btn2);
+      padding:10px 12px;
+      border-radius:14px;
+      box-shadow: 0 8px 18px rgba(2,6,23,.10);
+      display:inline-flex; gap:8px; align-items:center;
+      font-weight:800;
+    }
+    button.primary{color:white; background:linear-gradient(135deg, #2563eb, #4f46e5)}
+    button.danger{color:white; background:linear-gradient(135deg, #e11d48, #fb7185)}
+    button.ghost{background:transparent; border:1px solid rgba(15,23,42,.14); box-shadow:none}
+    button:disabled{opacity:.45; cursor:not-allowed}
+    .pill{
+      border:1px solid rgba(15,23,42,.12);
+      border-radius:999px;
+      padding:8px 10px;
+      color:var(--muted);
+      font-size:12px;
+      display:flex; gap:10px; align-items:center;
+      background: rgba(255,255,255,.7);
+    }
+    .pill strong{color:var(--text)}
+    .grid{display:grid; grid-template-columns: 320px 1fr; gap:14px; padding:14px 16px 22px; max-width:1100px; margin:0 auto;}
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr} }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.94), rgba(255,255,255,.88));
+      border:1px solid rgba(15,23,42,.10);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding:14px 14px 10px;
+      border-bottom:1px solid rgba(15,23,42,.08);
+      display:flex; gap:10px; justify-content:space-between; align-items:flex-start; flex-wrap:wrap;
+    }
+    .card .hd .t{font-size:14px; font-weight:900}
+    .card .hd .d{font-size:12px; color:var(--muted); margin-top:4px; line-height:1.45}
+    .card .bd{padding:14px}
+    .progress{
+      height:10px;
+      background: rgba(15,23,42,.08);
+      border-radius:999px;
+      overflow:hidden;
+      border:1px solid rgba(15,23,42,.08);
+    }
+    .progress > div{
+      height:100%; width:0%;
+      background: linear-gradient(90deg, #22c55e, #2563eb);
+      transition: width .35s ease;
+    }
+    .map{display:grid; gap:10px;}
+    .stage{
+      display:flex; align-items:center; gap:10px;
+      padding:10px 10px;
+      border:1px solid rgba(15,23,42,.12);
+      border-radius: 16px;
+      background: rgba(255,255,255,.72);
+      cursor:pointer;
+      transition: transform .12s ease, background .12s ease;
+      user-select:none;
+    }
+    .stage:hover{transform: translateY(-1px); background: rgba(255,255,255,.95)}
+    .stage.active{
+      border-color: rgba(37,99,235,.45);
+      box-shadow: 0 10px 22px rgba(37,99,235,.12);
+      background: rgba(37,99,235,.08);
+    }
+    .dot{
+      width:12px; height:12px; border-radius:999px;
+      background: rgba(15,23,42,.24);
+      border:1px solid rgba(15,23,42,.18);
+      position:relative;
+    }
+    .stage.done .dot{ background: var(--good); border-color: rgba(22,163,74,.45); }
+    .stage.locked{ opacity:.55; cursor:not-allowed; }
+    .stage .meta{display:flex; flex-direction:column; gap:3px}
+    .stage .meta .name{font-weight:900; font-size:13px}
+    .stage .meta .hint{font-size:12px; color:var(--muted)}
+    .callout{
+      border:1px solid rgba(15,23,42,.10);
+      border-radius: 16px;
+      padding:12px;
+      background: rgba(255,255,255,.70);
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.55;
+    }
+    .callout strong{color:var(--text)}
+    .toast{
+      position:fixed; right:14px; bottom:14px; z-index:100;
+      max-width: min(420px, calc(100vw - 28px));
+      padding:12px 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.95);
+      border: 1px solid rgba(15,23,42,.12);
+      box-shadow: var(--shadow);
+      display:none;
+    }
+    .toast.show{display:block; animation: pop .12s ease}
+    @keyframes pop{ from{transform: translateY(6px); opacity:.0} to{transform: translateY(0); opacity:1} }
+    .toast .row{display:flex; gap:10px; align-items:flex-start}
+    .toast .icon{
+      width:26px; height:26px; border-radius:10px;
+      display:grid; place-items:center; flex:0 0 auto;
+      background: rgba(15,23,42,.04);
+      border:1px solid rgba(15,23,42,.10);
+    }
+    .toast .msg{font-size:13px; line-height:1.45}
+    .toast.good .icon{background: rgba(22,163,74,.12); border-color: rgba(22,163,74,.25)}
+    .toast.bad .icon{background: rgba(225,29,72,.12); border-color: rgba(225,29,72,.25)}
+    .toast.warn .icon{background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.25)}
+    .split{display:grid; grid-template-columns: 1fr 1fr; gap:12px}
+    @media (max-width: 980px){ .split{grid-template-columns:1fr} }
+    .level-title{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:0 0 10px;}
+    .level-title h2{margin:0; font-size:18px}
+    .level-title .tag{
+      font-size:12px; color:var(--muted);
+      border:1px solid rgba(15,23,42,.12);
+      border-radius:999px;
+      padding:6px 10px;
+      background: rgba(255,255,255,.72);
+    }
+    .kpi{display:flex; gap:10px; flex-wrap:wrap; margin:8px 0 12px;}
+    .kpi .box{
+      border:1px solid rgba(15,23,42,.10);
+      border-radius:16px;
+      padding:10px 12px;
+      background: rgba(255,255,255,.72);
+      font-size:12px;
+      color:var(--muted);
+      display:flex; flex-direction:column; gap:4px;
+    }
+    .kpi .box strong{color:var(--text); font-size:16px; font-family:var(--mono)}
+    .divider{ height:1px; background: rgba(15,23,42,.10); margin:12px 0; }
+    .note{ font-size:12px; color:var(--muted); line-height:1.55; }
+    .note strong{color:var(--text)}
+    .panel{
+      border:1px solid rgba(15,23,42,.10);
+      border-radius: var(--radius2);
+      background: rgba(255,255,255,.72);
+      padding:12px;
+    }
+    /* Drag & Drop */
+    .dragRow{display:flex; gap:10px; flex-wrap:wrap}
+    .chip{
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid rgba(15,23,42,.14);
+      background: rgba(255,255,255,.90);
+      cursor:grab;
+      user-select:none;
+      font-weight:900;
+      font-size:13px;
+    }
+    .dropZone{
+      min-height:52px;
+      border-radius:16px;
+      border:1px dashed rgba(15,23,42,.28);
+      background: rgba(255,255,255,.68);
+      padding:10px 12px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    }
+    .dropZone.good{border-color: rgba(22,163,74,.55); background: rgba(22,163,74,.10)}
+    .dropZone.bad{border-color: rgba(225,29,72,.55); background: rgba(225,29,72,.08)}
+    .dropZone .label{font-weight:900}
+    .dropZone .slot{ color:var(--muted); font-size:12px; font-family:var(--mono); }
+    /* Quiz */
+    .qCard{
+      border:1px solid rgba(15,23,42,.10);
+      background: rgba(255,255,255,.72);
+      border-radius: 18px;
+      padding:12px;
+      margin:10px 0;
+    }
+    .qHead{ display:flex; gap:10px; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; }
+    .qHead .qid{font-family:var(--mono); color:var(--muted); font-size:12px}
+    .qHead .qtxt{font-weight:900; font-size:14px; line-height:1.45; margin-top:4px}
+    .opts{display:grid; gap:8px; margin-top:10px}
+    .opt{
+      display:flex; gap:10px; align-items:flex-start;
+      border:1px solid rgba(15,23,42,.10);
+      border-radius: 14px;
+      padding:10px;
+      background: rgba(255,255,255,.92);
+      cursor:pointer;
+      user-select:none;
+      transition: transform .08s ease, background .12s ease;
+    }
+    .opt:hover{transform: translateY(-1px); background: rgba(255,255,255,1)}
+    .opt input{margin-top:3px}
+    .feedback{
+      margin-top:10px;
+      border-radius: 14px;
+      padding:10px;
+      font-size:12px;
+      line-height:1.55;
+      border:1px solid rgba(15,23,42,.10);
+      background: rgba(255,255,255,.72);
+      color:var(--muted);
+    }
+    .feedback.good{border-color: rgba(22,163,74,.30); background: rgba(22,163,74,.10)}
+    .feedback.bad{border-color: rgba(225,29,72,.30); background: rgba(225,29,72,.08)}
+    .feedback .title{font-weight:900; color:var(--text); margin-bottom:4px}
+    .inline{display:inline-flex; gap:8px; align-items:center; flex-wrap:wrap}
+    .small{font-size:12px; color:var(--muted)}
+    .mono{font-family:var(--mono)}
+    .rowBtns{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
+    /* Simple diagram */
+    .diagram{
+      display:grid; place-items:center;
+      border-radius: 18px;
+      padding:12px;
+      border:1px solid rgba(15,23,42,.10);
+      background: rgba(255,255,255,.85);
+      overflow:hidden;
+    }
+    .tip{
+      display:none;
+      margin-top:10px;
+      border:1px solid rgba(15,23,42,.10);
+      border-radius: 16px;
+      padding:10px;
+      background: rgba(255,255,255,.75);
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.55;
+    }
+    .tip.show{display:block}
+    .tip strong{color:var(--text)}
+    .hot{ cursor:pointer; filter: drop-shadow(0 8px 10px rgba(2,6,23,.10)); }
+    /* Sort */
+    .sortList{display:grid; gap:8px; margin-top:10px}
+    .sortItem{
+      display:flex; gap:10px; align-items:center;
+      border:1px solid rgba(15,23,42,.10);
+      border-radius: 14px;
+      padding:10px;
+      background: rgba(255,255,255,.82);
+      cursor:grab;
+      user-select:none;
+    }
+    .handle{
+      width:24px; height:24px; border-radius:10px;
+      border:1px solid rgba(15,23,42,.12);
+      background: rgba(15,23,42,.04);
+      display:grid; place-items:center;
+      color:var(--muted); font-weight:900;
+    }
+    /* Level 2 flow */
+    .flow{display:grid; gap:10px;}
+    .tube{
+      height:220px;
+      border-radius: 24px;
+      border:1px solid rgba(15,23,42,.10);
+      background: rgba(255,255,255,.85);
+      position:relative;
+      overflow:hidden;
+    }
+    .tube .node{
+      position:absolute; left:14px; right:14px; height:48px;
+      border-radius: 16px;
+      border:1px solid rgba(15,23,42,.10);
+      background: rgba(255,255,255,.92);
+      display:flex; justify-content:space-between; align-items:center;
+      padding:0 12px;
+      font-size:12px; color:var(--muted);
+    }
+    .node strong{color:var(--text)}
+    .node.root{top:14px}
+    .node.stem{top:86px}
+    .node.leaf{top:158px}
+    .droplet{
+      position:absolute; width:16px; height:16px; border-radius:999px;
+      background: linear-gradient(135deg, #22c55e, #2563eb);
+      left: calc(50% - 8px);
+      top: 26px;
+      opacity:0;
+    }
+    /* Level 4 path */
+    .pathGrid{ display:grid; gap:12px; }
+    .pathBoard{
+      border:1px solid rgba(15,23,42,.10);
+      border-radius: 18px;
+      background: rgba(255,255,255,.78);
+      padding:12px;
+    }
+    .nodes{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    .n{
+      padding:10px 10px; border-radius: 16px;
+      border:1px solid rgba(15,23,42,.10);
+      background: rgba(255,255,255,.92);
+      cursor:pointer; user-select:none;
+      font-size:12px; color:var(--muted);
+    }
+    .n strong{color:var(--text)}
+    .n.ok{border-color: rgba(22,163,74,.35); background: rgba(22,163,74,.10)}
+    .n.bad{border-color: rgba(225,29,72,.35); background: rgba(225,29,72,.08)}
+    .token{ display:inline-flex; align-items:center; gap:8px; padding:10px 12px; border-radius: 16px; border:1px solid rgba(15,23,42,.12); background: rgba(255,255,255,.75); }
+    .token .ball{ width:16px; height:16px; border-radius:999px; background: linear-gradient(135deg, #fb7185, #4f46e5); }
+    .token .ball.oxygen{background: linear-gradient(135deg, #22c55e, #2563eb)}
+    .token small{color:var(--muted)}
+    /* Level 5 report */
+    .report{ border:1px solid rgba(15,23,42,.10); border-radius: 18px; background: rgba(255,255,255,.72); padding:12px; }
+    .tbl{ width:100%; border-collapse: collapse; margin-top:10px; font-size:12px; }
+    .tbl th,.tbl td{ border-bottom:1px solid rgba(15,23,42,.10); padding:8px 6px; text-align:left; color:var(--muted); vertical-align:top; }
+    .tbl th{color:var(--text); font-weight:900}
+    .chipMini{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:4px 8px; border-radius:999px;
+      border:1px solid rgba(15,23,42,.12);
+      background: rgba(255,255,255,.92);
+      color:var(--muted); font-size:12px; margin-right:6px;
+    }
+    .chipMini.good{border-color: rgba(22,163,74,.25); background: rgba(22,163,74,.10)}
+    .chipMini.bad{border-color: rgba(225,29,72,.25); background: rgba(225,29,72,.08)}
+    textarea{
+      width:100%;
+      border-radius:16px;
+      padding:10px 12px;
+      border:1px solid rgba(15,23,42,.12);
+      background: rgba(255,255,255,.92);
+      color:var(--text);
+      outline:none;
+      resize:vertical;
+    }
+    .footerSpace{height:24px}
+  </style>
+</head>
+
+<body>
+<header>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <div class="badge">運</div>
+        <div>
+          <h1>生物體內的運輸｜五關卡互動遊戲（明亮版）</h1>
+          <div class="sub">第1~4關通關各 +10 分｜第5關總結評量 + 計時加減分｜純前端單檔可離線</div>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="pill" id="pillBest"><span>最佳成績</span><strong id="bestScore">—</strong><span class="mono" id="bestDate"></span></div>
+        <button class="ghost" id="btnSound" title="切換音效">🔊 音效：開</button>
+        <button class="ghost" id="btnBack">⬅️ 回上一關</button>
+        <button class="primary" id="btnNext">➡️ 下一關</button>
+        <button class="danger" id="btnRestart">🔁 重新開始</button>
+      </div>
+    </div>
+    <div style="margin-top:12px;">
+      <div class="progress"><div id="bar"></div></div>
+    </div>
+  </div>
+</header>
+
+<div class="grid">
+  <!-- LEFT: map & status -->
+  <div class="card">
+    <div class="hd">
+      <div>
+        <div class="t">關卡地圖</div>
+        <div class="d">完成一關才可進下一關；已完成會打勾 ✅</div>
+      </div>
+      <div class="pill"><span>目前</span><strong id="nowStage">1</strong><span>/ 5</span></div>
+    </div>
+    <div class="bd">
+      <div class="map" id="map"></div>
+      <div class="divider"></div>
+      <div class="callout" id="sidebarTip">
+        <strong>小提醒：</strong><br/>
+        每題下方都有「提示」與「解析」。請用解析把概念講清楚：<br/>
+        植物：木質部 / 韌皮部、蒸散拉力、供應部→需求部。<br/>
+        動物：血液單向、瓣膜防逆流、體循環 / 肺循環與物質交換。
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: level content -->
+  <div class="card">
+    <div class="hd">
+      <div>
+        <div class="t" id="levelName">第1關｜植物的運輸構造</div>
+        <div class="d" id="levelDesc">拖放配對 + 點圖標註：把木質部/韌皮部放到正確位置，並讀懂它們運輸的物質與方向。</div>
+      </div>
+      <div class="pill" id="levelPill"><span>狀態</span><strong id="levelStatus">進行中</strong></div>
+    </div>
+    <div class="bd" id="levelRoot"><!-- injected --></div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <div class="row">
+    <div class="icon" id="toastIcon">ℹ️</div>
+    <div class="msg" id="toastMsg">訊息</div>
+  </div>
+</div>
+
+<script>
+/* ===========================
+  生物體內的運輸｜單檔遊戲（可離線）
+  - 前 4 關：通關各 +10 分（共 40）
+  - 第 5 關：10 題混合題型 + 計時加減分（±10）
+  - 最終滿分 150，等第 A/B/C
+=========================== */
+(() => {
+  const $ = (sel, root=document) => root.querySelector(sel);
+  const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+
+  /* ---------- Sound (simple beep) ---------- */
+  let soundOn = true;
+  function beep(type="ok"){
+    if(!soundOn) return;
+    try{
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "sine";
+      o.frequency.value = type==="ok" ? 660 : type==="warn" ? 520 : 240;
+      g.gain.value = 0.06;
+      o.connect(g);
+      g.connect(ctx.destination);
+      o.start();
+      setTimeout(()=>{ o.stop(); ctx.close(); }, 110);
+    }catch(e){}
+  }
+
+  /* ---------- Toast ---------- */
+  let toastTimer = null;
+  function toast(msg, kind="warn"){
+    const el = $("#toast");
+    const ic = $("#toastIcon");
+    const ms = $("#toastMsg");
+    el.className = "toast show " + kind;
+    ic.textContent = kind==="good" ? "✅" : kind==="bad" ? "⛔" : "ℹ️";
+    ms.textContent = msg;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=> el.className = "toast", 2600);
+    beep(kind==="good" ? "ok" : kind==="bad" ? "bad" : "warn");
+  }
+
+  /* ---------- Persistent best score ---------- */
+  const BEST_KEY = "transport_game_best_bright_v1";
+  function loadBest(){
+    try{
+      const raw = localStorage.getItem(BEST_KEY);
+      if(!raw) return null;
+      return JSON.parse(raw);
+    }catch(e){ return null; }
+  }
+  function saveBest(payload){
+    try{ localStorage.setItem(BEST_KEY, JSON.stringify(payload)); }catch(e){}
+  }
+  function renderBest(){
+    const best = loadBest();
+    if(!best){
+      $("#bestScore").textContent = "—";
+      $("#bestDate").textContent = "";
+      return;
+    }
+    $("#bestScore").textContent = best.total + " 分 (" + best.grade + ")";
+    $("#bestDate").textContent = best.date ? "｜" + best.date : "";
+  }
+
+  /* ---------- Game State ---------- */
+  const state = {
+    level: 1,
+    completed: [false,false,false,false,false], // index 0..4
+    passPoints: [0,0,0,0], // first 4 levels pass points (10 each if passed)
+    level5: {
+      started:false, startTs:null, timerId:null, secondsLeft:180,
+      qAttempts:{}, qScore:{}, qWrong:{}, qDone:{},
+      overtime:false, finished:false
+    }
+  };
+
+  /* ---------- Stage definitions ---------- */
+  const stages = [
+    { id:1, name:"第1關｜植物的運輸構造", hint:"拖放配對 + 點圖標註", desc:"把「木質部/韌皮部」拖到莖橫切面正確位置，並點擊圖示閱讀提示。"},
+    { id:2, name:"第2關｜植物的運輸", hint:"路徑模擬 + 情境題", desc:"用「蒸散作用」控制鈕啟動水分運輸，並回答情境題：缺葉／陰天／氣孔關閉的影響。"},
+    { id:3, name:"第3關｜動物的運輸構造", hint:"排序 + 點擊揭示/配對", desc:"排序血管物質交換路徑，並配對瓣膜功能，理解血液單向流動。"},
+    { id:4, name:"第4關｜動物的運輸", hint:"路徑任務 + 物質交換", desc:"完成體循環與肺循環的「路徑任務」，並在交換站回答交換物質。"},
+    { id:5, name:"第5關｜運輸大挑戰", hint:"混合題型 + 計時結算", desc:"10 題總結評量（單選/多選/拖放/排序/短答）。依作答次數與錯誤扣分計算總分與等第。"}
+  ];
+
+  /* ---------- Question Bank (Level 5) ---------- */
+  const Q = [
+    { id:"L5-01", type:"single",
+      stem:"植物「木質部」主要運輸下列哪一項？方向通常如何？",
+      opts:[
+        "養分（蔗糖等）且一定向下",
+        "水分與無機鹽，通常由根向上到葉",
+        "氧氣，向上向下都可",
+        "二氧化碳，通常由葉向根"
+      ],
+      ans:[1],
+      hint:"想想「根吸水 → 葉蒸散」的通道是誰。",
+      explain:"木質部主要輸送水分與無機鹽，多數情況由根向上運至莖、葉；其主要動力可由蒸散作用提供向上拉力。"
+    },
+    { id:"L5-02", type:"single",
+      stem:"植物「韌皮部」的運輸特色最符合哪一項？",
+      opts:[
+        "只能向上，輸送水分",
+        "只能向下，輸送無機鹽",
+        "可雙向，輸送養分（如蔗糖）",
+        "可雙向，輸送氧氣"
+      ],
+      ans:[2],
+      hint:"韌皮部跟「供應部→需求部」有關。",
+      explain:"韌皮部主要運輸有機養分（如蔗糖），方向依供應部（來源）與需求部（受體）而定，因此可呈現雙向流動。"
+    },
+    { id:"L5-03", type:"multi",
+      stem:"下列哪些情況會讓「植物水分向上運輸」的速度明顯變慢？（可複選）",
+      opts:[
+        "陰天（光弱，氣孔開度可能下降）",
+        "葉片大量缺失（蒸散面積減少）",
+        "氣孔關閉（蒸散下降）",
+        "風大炎熱（蒸散增加）"
+      ],
+      ans:[0,1,2],
+      hint:"蒸散拉力越小，向上拉得越慢。",
+      explain:"水分向上運輸與蒸散造成的拉力密切相關。陰天、缺葉、氣孔關閉都會降低蒸散，進而使水分上升運輸變慢；風大炎熱反而常促進蒸散。"
+    },
+    { id:"L5-04", type:"dragmatch",
+      stem:"拖放配對：把「構造」拖到「描述」正確位置。",
+      pairs:[
+        { left:"木質部", right:"運輸水分/無機鹽，常由根向上" },
+        { left:"韌皮部", right:"運輸養分，依供應部/需求部可雙向" }
+      ],
+      hint:"一個跟水、蒸散有關；一個跟養分「來源→去向」有關。",
+      explain:"木質部輸送水分/無機鹽；韌皮部輸送養分且可因供應部/需求部而呈雙向。"
+    },
+    { id:"L5-05", type:"order",
+      stem:"排序題：在「體循環」中，含氧血從心臟出發到回到心臟的典型路徑順序是？",
+      items:[
+        "左心室 → 主動脈 → 身體組織微血管（物質交換） → 靜脈 → 右心房",
+        "右心室 → 肺動脈 → 肺微血管 → 肺靜脈 → 左心房",
+        "右心房 → 左心房 → 主動脈 → 身體微血管 → 靜脈"
+      ],
+      correctIndex: 0,
+      hint:"體循環是「心臟 → 身體 → 心臟」，含氧血起點在左心室。",
+      explain:"體循環：左心室將含氧血打入主動脈→身體微血管交換→經靜脈回到右心房。"
+    },
+    { id:"L5-06", type:"single",
+      stem:"為什麼心臟需要「房室瓣」與「半月瓣」？",
+      opts:[
+        "讓血液雙向流動，方便混合",
+        "避免血液逆流，維持單向流動",
+        "增加血液中的養分濃度",
+        "讓血液在心臟中停留更久"
+      ],
+      ans:[1],
+      hint:"題目關鍵字：單向、逆流。",
+      explain:"房室瓣與半月瓣的主要功能是防止血液逆流，確保血液在心臟與血管中維持單向流動。"
+    },
+    { id:"L5-07", type:"single",
+      stem:"下列哪一項最能描述「肺循環」？",
+      opts:[
+        "左心室 → 身體 → 右心房",
+        "右心室 → 肺 → 左心房",
+        "左心房 → 肺 → 右心室",
+        "右心房 → 身體 → 左心室"
+      ],
+      ans:[1],
+      hint:"肺循環：把缺氧血送到肺換氣，再把含氧血送回心臟。",
+      explain:"肺循環：右心室將缺氧血送入肺動脈→肺微血管進行氣體交換→經肺靜脈回到左心房。"
+    },
+    { id:"L5-08", type:"multi",
+      stem:"關於「物質交換」正確的是哪些？（可複選）",
+      opts:[
+        "身體組織：氧氣進入細胞、二氧化碳進入血液",
+        "肺泡：二氧化碳進入血液、氧氣進入肺泡",
+        "肺泡：氧氣進入血液、二氧化碳離開血液",
+        "身體組織：養分與氧氣通常從血液擴散到細胞"
+      ],
+      ans:[0,2,3],
+      hint:"把交換站分成「身體組織」與「肺泡」兩種。",
+      explain:"身體組織交換：氧氣/養分由血到細胞，二氧化碳由細胞到血。肺泡交換：氧氣由肺泡到血，二氧化碳由血到肺泡並呼出。"
+    },
+    { id:"L5-09", type:"short",
+      stem:"短答 1：用 1~2 句話說明「植物水分向上運輸」最主要的驅動力是什麼？（請包含關鍵詞）",
+      keywords:["蒸散","拉力"],
+      hint:"請寫到：葉的蒸散 + 向上拉力（可補充毛細/根壓）。",
+      explain:"主要驅動力是葉片蒸散造成的向上拉力（牽引水柱上升）；可補充毛細作用與根壓作為協助因素。"
+    },
+    { id:"L5-10", type:"short",
+      stem:"短答 2：用 1~2 句話說明「韌皮部為何可能呈現雙向運輸」？（請包含關鍵詞）",
+      keywords:["供應部","需求部"],
+      hint:"寫到：來源（供應）與去向（需求）會改變流動方向。",
+      explain:"韌皮部輸送養分的方向取決於供應部（來源）與需求部（受體）的相對位置與需求，因此可能向上或向下，呈現雙向。"
+    }
+  ];
+
+  /* ---------- Helpers ---------- */
+  const clamp = (n,a,b)=>Math.max(a, Math.min(b, n));
+  function formatTime(sec){
+    const s = Math.abs(sec);
+    const mm = String(Math.floor(s/60)).padStart(2,"0");
+    const ss = String(Math.floor(s%60)).padStart(2,"0");
+    return (sec < 0 ? "-" : "") + mm + ":" + ss;
+  }
+  function gradeOf(total){ if(total>=130) return "A"; if(total>=100) return "B"; return "C"; }
+  function baseScoreByAttempts(at){ if(at===1) return 10; if(at===2) return 6; if(at===3) return 3; return 0; }
+
+  /* ---------- Map & navigation ---------- */
+  function canEnterStage(stageId){
+    if(stageId===1) return true;
+    return state.completed[stageId-2] === true;
+  }
+  function renderMap(){
+    const map = $("#map");
+    map.innerHTML = "";
+    stages.forEach(s=>{
+      const div = document.createElement("div");
+      const locked = !canEnterStage(s.id);
+      div.className = "stage" + (state.level===s.id ? " active":"") + (state.completed[s.id-1] ? " done":"") + (locked ? " locked":"");
+      div.innerHTML = `
+        <div class="dot"></div>
+        <div class="meta">
+          <div class="name">${s.name}</div>
+          <div class="hint">${s.hint}</div>
+        </div>
+        <div style="margin-left:auto;color:var(--muted);font-size:12px;">
+          ${state.completed[s.id-1] ? "✅" : locked ? "🔒" : "▶"}
+        </div>
+      `;
+      div.addEventListener("click", ()=>{
+        if(locked){ toast("需要先完成前一關才能進入。", "warn"); return; }
+        goToLevel(s.id);
+      });
+      map.appendChild(div);
+    });
+    $("#nowStage").textContent = String(state.level);
+    const pct = (state.completed.filter(Boolean).length / 5) * 100;
+    $("#bar").style.width = pct + "%";
+  }
+  function updateHeaderButtons(){
+    $("#btnBack").disabled = state.level===1;
+    const isLast = state.level===5;
+    const currDone = state.completed[state.level-1];
+    $("#btnNext").disabled = isLast ? true : !currDone;
+  }
+  function setLevelStatus(){
+    $("#levelStatus").textContent = state.completed[state.level-1] ? "已完成 ✅" : "進行中";
+  }
+
+  function goToLevel(n){
+    state.level = n;
+    renderLevel();
+    renderMap();
+    updateHeaderButtons();
+    setLevelStatus();
+  }
+
+  $("#btnBack").addEventListener("click", ()=>{ if(state.level>1) goToLevel(state.level-1); });
+  $("#btnNext").addEventListener("click", ()=>{
+    if(state.level>=5) return;
+    if(!state.completed[state.level-1]){ toast("先完成本關再前往下一關。", "warn"); return; }
+    goToLevel(state.level+1);
+  });
+  $("#btnSound").addEventListener("click", ()=>{
+    soundOn = !soundOn;
+    $("#btnSound").textContent = soundOn ? "🔊 音效：開" : "🔇 音效：關";
+    toast(soundOn ? "音效已開啟" : "音效已關閉", "good");
+  });
+  $("#btnRestart").addEventListener("click", ()=>{
+    if(!confirm("確定要重新開始嗎？第5關作答與計時將會清空。")) return;
+    stopLevel5Timer();
+    state.level = 1;
+    state.completed = [false,false,false,false,false];
+    state.passPoints = [0,0,0,0];
+    state.level5 = { started:false, startTs:null, timerId:null, secondsLeft:180, qAttempts:{}, qScore:{}, qWrong:{}, qDone:{}, overtime:false, finished:false };
+    renderLevel();
+    renderMap();
+    updateHeaderButtons();
+    setLevelStatus();
+    toast("已重新開始。從第 1 關出發！", "good");
+  });
+
+  /* ---------- Level renderer ---------- */
+  function renderLevel(){
+    const s = stages[state.level-1];
+    $("#levelName").textContent = s.name;
+    $("#levelDesc").textContent = s.desc;
+    const root = $("#levelRoot");
+    root.innerHTML = "";
+    if(state.level===1) renderLevel1(root);
+    if(state.level===2) renderLevel2(root);
+    if(state.level===3) renderLevel3(root);
+    if(state.level===4) renderLevel4(root);
+    if(state.level===5) renderLevel5(root);
+    setLevelStatus();
+  }
+
+  /* =========================================
+     LEVEL 1: Plant structure
+  ========================================= */
+  function renderLevel1(root){
+    root.innerHTML = `
+      <div class="level-title">
+        <h2>第1關｜植物的運輸構造</h2>
+        <span class="tag">拖放配對</span>
+        <span class="tag">點圖標註</span>
+      </div>
+
+      <div class="kpi">
+        <div class="box"><span>本關通關分</span><strong class="mono">+10</strong></div>
+        <div class="box"><span>任務</span><strong class="mono">2</strong><span class="small">木質部 / 韌皮部配對</span></div>
+      </div>
+
+      <div class="split">
+        <div class="panel">
+          <div class="note">
+            <strong>任務 1｜拖放配對：</strong>把「木質部」「韌皮部」拖到莖橫切面的正確位置。<br/>
+            <span class="small">提示：木質部偏內、韌皮部偏外；木質部多運水分/無機鹽，韌皮部多運養分且可雙向。</span>
+          </div>
+
+          <div style="margin-top:12px;" class="dragRow">
+            <div class="chip" draggable="true" data-drag="木質部">木質部</div>
+            <div class="chip" draggable="true" data-drag="韌皮部">韌皮部</div>
+          </div>
+
+          <div style="margin-top:12px; display:grid; gap:10px;">
+            <div class="dropZone" data-zone="outer">
+              <div class="label">外側（靠近表皮）</div>
+              <div class="slot">拖到這裡</div>
+            </div>
+            <div class="dropZone" data-zone="inner">
+              <div class="label">內側（靠近髓部）</div>
+              <div class="slot">拖到這裡</div>
+            </div>
+          </div>
+
+          <div class="rowBtns">
+            <button class="ghost" id="l1Check">✅ 檢查配對</button>
+            <button class="ghost" id="l1Reset">🧽 清除重來</button>
+          </div>
+
+          <div class="feedback" id="l1Fb" style="display:none;"></div>
+        </div>
+
+        <div class="panel">
+          <div class="note">
+            <strong>任務 2｜點圖標註：</strong>點擊圖中的小圖示，讀懂木質部/韌皮部的功能與運輸方向。
+          </div>
+
+          <div class="diagram" style="margin-top:12px;">
+            <svg viewBox="0 0 320 260" width="100%" height="240" aria-label="stem diagram">
+              <defs>
+                <radialGradient id="g1" cx="50%" cy="40%" r="70%">
+                  <stop offset="0%" stop-color="rgba(37,99,235,.18)"></stop>
+                  <stop offset="100%" stop-color="rgba(37,99,235,.04)"></stop>
+                </radialGradient>
+                <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="rgba(34,197,94,.55)"></stop>
+                  <stop offset="100%" stop-color="rgba(37,99,235,.45)"></stop>
+                </linearGradient>
+              </defs>
+
+              <!-- stem cross section -->
+              <circle cx="160" cy="125" r="92" fill="url(#g1)" stroke="rgba(15,23,42,.14)" stroke-width="2"></circle>
+              <circle cx="160" cy="125" r="58" fill="rgba(15,23,42,.03)" stroke="rgba(15,23,42,.10)" stroke-width="2"></circle>
+
+              <!-- inner core -->
+              <circle cx="160" cy="125" r="38" fill="rgba(37,99,235,.10)" stroke="rgba(37,99,235,.22)" stroke-width="2"></circle>
+
+              <!-- hotspots -->
+              <g class="hot" data-hot="phloem">
+                <circle cx="240" cy="86" r="12" fill="url(#g2)" stroke="rgba(15,23,42,.18)" stroke-width="2"></circle>
+                <text x="240" y="91" text-anchor="middle" font-size="12" fill="#0f172a" font-weight="900">i</text>
+              </g>
+              <g class="hot" data-hot="xylem">
+                <circle cx="160" cy="125" r="12" fill="rgba(225,29,72,.35)" stroke="rgba(15,23,42,.18)" stroke-width="2"></circle>
+                <text x="160" y="130" text-anchor="middle" font-size="12" fill="#0f172a" font-weight="900">i</text>
+              </g>
+
+              <text x="160" y="245" text-anchor="middle" font-size="12" fill="rgba(15,23,42,.55)">（示意圖：外圈與內圈位置概念）</text>
+            </svg>
+          </div>
+
+          <div class="tip" id="l1Tip"></div>
+
+          <div class="divider"></div>
+
+          <div class="note">
+            <strong>通關條件：</strong>拖放配對正確 + 讀完提示後按「完成本關」。
+          </div>
+
+          <div class="rowBtns">
+            <button class="primary" id="l1Finish" disabled>🏁 完成本關（+10）</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const placed = { outer:null, inner:null };
+    const zones = $$(".dropZone", root);
+    const chips = $$(".chip", root);
+
+    chips.forEach(ch=>{
+      ch.addEventListener("dragstart", (e)=>{
+        e.dataTransfer.setData("text/plain", ch.dataset.drag);
+      });
+    });
+
+    zones.forEach(z=>{
+      z.addEventListener("dragover", e=>e.preventDefault());
+      z.addEventListener("drop", (e)=>{
+        e.preventDefault();
+        const val = e.dataTransfer.getData("text/plain");
+        const zone = z.dataset.zone;
+        placed[zone] = val;
+        z.querySelector(".slot").textContent = val ? ("已放入：" + val) : "拖到這裡";
+        toast(`已放入：${val}`, "good");
+      });
+    });
+
+    $("#l1Reset", root).addEventListener("click", ()=>{
+      placed.outer = null; placed.inner = null;
+      zones.forEach(z=>{
+        z.classList.remove("good","bad");
+        z.querySelector(".slot").textContent = "拖到這裡";
+      });
+      $("#l1Fb", root).style.display="none";
+      $("#l1Finish", root).disabled = true;
+      toast("已清除，重新配對。","warn");
+    });
+
+    const tipsRead = { xylem:false, phloem:false };
+    $$(".hot", root).forEach(h=>{
+      h.addEventListener("click", ()=>{
+        const t = h.dataset.hot;
+        const box = $("#l1Tip", root);
+        box.classList.add("show");
+        if(t==="xylem"){
+          tipsRead.xylem = true;
+          box.innerHTML = `
+            <strong>木質部（Xylem）</strong><br/>
+            主要運輸 <strong>水分與無機鹽</strong>，多由 <strong>根 → 莖 → 葉</strong> 向上運送。<br/>
+            水分向上運輸常與 <strong>蒸散作用造成的拉力</strong> 密切相關（可搭配毛細作用/根壓理解）。
+          `;
+        }else{
+          tipsRead.phloem = true;
+          box.innerHTML = `
+            <strong>韌皮部（Phloem）</strong><br/>
+            主要運輸 <strong>養分（如蔗糖）</strong>，方向依 <strong>供應部（來源）</strong> 與 <strong>需求部（受體）</strong> 決定，因此可能呈現 <strong>雙向</strong>。
+          `;
+        }
+        maybeEnableFinish();
+      });
+    });
+
+    function check(){
+      const fb = $("#l1Fb", root);
+      fb.style.display="block";
+      zones.forEach(z=>z.classList.remove("good","bad"));
+
+      const okOuter = placed.outer === "韌皮部";
+      const okInner = placed.inner === "木質部";
+
+      const outerEl = $('.dropZone[data-zone="outer"]', root);
+      const innerEl = $('.dropZone[data-zone="inner"]', root);
+      outerEl.classList.add(okOuter ? "good" : "bad");
+      innerEl.classList.add(okInner ? "good" : "bad");
+
+      const ok = okOuter && okInner;
+      fb.className = "feedback " + (ok ? "good" : "bad");
+      fb.innerHTML = `
+        <div class="title">${ok ? "✅ 配對正確！" : "⛔ 還差一點！"}</div>
+        <div>${ok ? "你已正確辨識：韌皮部偏外、木質部偏內。" : "請再想想：木質部通常更靠內；韌皮部更靠外。"}</div>
+        <div class="small" style="margin-top:6px;">
+          解析：木質部多運輸水分/無機鹽（常向上），韌皮部運輸養分，方向依供應部/需求部而可雙向。
+        </div>
+      `;
+      toast(ok ? "配對成功！再完成點圖閱讀即可通關。" : "再調整一下配對位置。", ok ? "good" : "bad");
+      maybeEnableFinish();
+    }
+
+    function maybeEnableFinish(){
+      const okMatch = (placed.outer === "韌皮部") && (placed.inner === "木質部");
+      const okTips = tipsRead.xylem && tipsRead.phloem;
+      $("#l1Finish", root).disabled = !(okMatch && okTips);
+    }
+
+    $("#l1Check", root).addEventListener("click", check);
+
+    $("#l1Finish", root).addEventListener("click", ()=>{
+      state.completed[0] = true;
+      state.passPoints[0] = 10;
+      renderMap(); updateHeaderButtons(); setLevelStatus();
+      toast("第 1 關通關！獲得 +10 分。","good");
+    });
+  }
+
+  /* =========================================
+     LEVEL 2: Plant transport
+  ========================================= */
+  function renderLevel2(root){
+    root.innerHTML = `
+      <div class="level-title">
+        <h2>第2關｜植物的運輸</h2>
+        <span class="tag">路徑模擬</span>
+        <span class="tag">情境題</span>
+      </div>
+
+      <div class="kpi">
+        <div class="box"><span>本關通關分</span><strong class="mono">+10</strong></div>
+        <div class="box"><span>任務</span><strong class="mono">3</strong><span class="small">模擬 1 次 + 情境題 2 題</span></div>
+      </div>
+
+      <div class="split">
+        <div class="panel">
+          <div class="note">
+            <strong>任務 1｜水分運輸模擬：</strong>按「開始運輸」後，水滴會從根部往上到葉。<br/>
+            <span class="small">請用滑桿調整「蒸散強度」：蒸散越強，向上拉力越大，水滴越快上升。</span>
+          </div>
+
+          <div class="flow" style="margin-top:12px;">
+            <div class="tube" id="tube">
+              <div class="node root"><strong>根</strong><span>吸收水分/無機鹽</span></div>
+              <div class="node stem"><strong>莖</strong><span>木質部向上運輸</span></div>
+              <div class="node leaf"><strong>葉</strong><span>蒸散作用：拉力來源</span></div>
+              <div class="droplet" id="drop"></div>
+            </div>
+
+            <div class="panel" style="padding:10px;">
+              <div class="inline">
+                <label class="small"><strong>蒸散強度</strong>（弱→強）</label>
+                <input type="range" id="tran" min="1" max="10" value="6" />
+                <span class="pill"><span>速度</span><strong id="spd" class="mono">6</strong></span>
+              </div>
+
+              <div class="small" style="margin-top:8px;">
+                快速理解：蒸散越強 → 向上拉力越大 → 水分上升越明顯（可補充毛細作用、根壓做協助因素）。
+              </div>
+
+              <div class="rowBtns" style="margin-top:10px;">
+                <button class="primary" id="simGo">▶️ 開始運輸</button>
+                <button class="ghost" id="simStop">⏹ 停止</button>
+              </div>
+
+              <div class="feedback" id="simFb" style="display:none;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="note">
+            <strong>任務 2~3｜情境題：</strong>請把「蒸散拉力」與「運輸速度」連起來思考。
+          </div>
+
+          <div class="qCard" id="l2q1"></div>
+          <div class="qCard" id="l2q2"></div>
+
+          <div class="rowBtns">
+            <button class="ghost" id="l2Check">✅ 檢查情境題</button>
+          </div>
+
+          <div class="feedback" id="l2Fb" style="display:none;"></div>
+
+          <div class="divider"></div>
+
+          <div class="note"><strong>通關條件：</strong>完成模擬至少 1 次 + 情境題兩題皆正確。</div>
+
+          <div class="rowBtns">
+            <button class="primary" id="l2Finish" disabled>🏁 完成本關（+10）</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const tran = $("#tran", root);
+    const spd = $("#spd", root);
+    let simRan = false;
+    let simTimer = null;
+
+    function setSpeed(){ spd.textContent = String(tran.value); }
+    tran.addEventListener("input", setSpeed);
+    setSpeed();
+
+    const drop = $("#drop", root);
+
+    function simStart(){
+      clearInterval(simTimer);
+      simRan = true;
+      const v = Number(tran.value);
+      let y = 26; // top px
+      drop.style.opacity = 1;
+      drop.style.top = y + "px";
+      $("#simFb", root).style.display="none";
+      toast("模擬開始：觀察水滴如何上升。","good");
+
+      simTimer = setInterval(()=>{
+        y += (0.7 + v*0.55); // speed
+        drop.style.top = y + "px";
+        if(y >= 176){
+          clearInterval(simTimer);
+          const fb = $("#simFb", root);
+          fb.style.display="block";
+          fb.className = "feedback good";
+          fb.innerHTML = `
+            <div class="title">✅ 模擬完成：水分到達葉</div>
+            <div>解析：植物水分主要經 <strong>木質部</strong> 上升；<strong>蒸散作用</strong>可造成向上拉力，促進水分持續被拉上來。</div>
+          `;
+          maybeEnableFinish();
+        }
+      }, 35);
+    }
+
+    function simStop(){
+      clearInterval(simTimer);
+      const fb = $("#simFb", root);
+      fb.style.display="block";
+      fb.className = "feedback";
+      fb.innerHTML = `
+        <div class="title">⏸ 已停止</div>
+        <div>你可以調整「蒸散強度」再重新開始，比較速度差異。</div>
+      `;
+    }
+
+    $("#simGo", root).addEventListener("click", simStart);
+    $("#simStop", root).addEventListener("click", simStop);
+
+    const q1 = {
+      id:"L2Q1", type:"single",
+      stem:"情境 1：若植物「葉片大量缺失」，水分向上運輸通常會如何改變？",
+      opts:["變快（因為阻力變小）","變慢（因為蒸散面積減少）","不變（蒸散與運輸無關）","一定停止（根不再吸水）"],
+      ans: 1,
+      hint:"葉少 → 蒸散少 → 拉力小。",
+      explain:"葉片減少使蒸散面積下降，蒸散造成的拉力減弱，因此水分上升運輸往往變慢。"
+    };
+    const q2 = {
+      id:"L2Q2", type:"multi",
+      stem:"情境 2：哪些狀況會使蒸散下降，進而讓水分向上運輸變慢？（可複選）",
+      opts:["陰天","氣孔關閉","風大炎熱","葉片大量缺失"],
+      ans: [0,1,3],
+      hint:"抓住：蒸散↓ 的情況。",
+      explain:"陰天、氣孔關閉、葉片缺失都會降低蒸散；風大炎熱常增加蒸散。"
+    };
+
+    function renderScenario(containerId, q){
+      const box = $("#" + containerId, root);
+      const multi = q.type === "multi";
+      box.innerHTML = `
+        <div class="qHead">
+          <div>
+            <div class="qid">${q.id}</div>
+            <div class="qtxt">${q.stem}</div>
+          </div>
+          <div class="pill"><span>${multi ? "多選" : "單選"}</span></div>
+        </div>
+
+        <div class="opts">
+          ${q.opts.map((t,i)=>`
+            <label class="opt">
+              <input type="${multi ? "checkbox" : "radio"}" name="${q.id}" value="${i}" />
+              <div>${t}</div>
+            </label>
+          `).join("")}
+        </div>
+
+        <div class="rowBtns">
+          <button class="ghost" data-hint="${q.id}">💡 提示</button>
+        </div>
+        <div class="tip" id="${q.id}_tip"></div>
+      `;
+      const hintBtn = box.querySelector(`[data-hint="${q.id}"]`);
+      hintBtn.addEventListener("click", ()=>{
+        const t = $("#"+q.id+"_tip", root);
+        t.classList.add("show");
+        t.innerHTML = `<strong>提示：</strong>${q.hint}`;
+      });
+    }
+
+    renderScenario("l2q1", q1);
+    renderScenario("l2q2", q2);
+
+    let qOk = false;
+
+    function readSelected(id){
+      const nodes = $$(`input[name="${id}"]:checked`, root);
+      return nodes.map(n=>Number(n.value)).sort((a,b)=>a-b);
+    }
+
+    function checkScenarios(){
+      const a1 = readSelected(q1.id);
+      const a2 = readSelected(q2.id);
+
+      const ok1 = a1.length===1 && a1[0]===q1.ans;
+      const ans2 = q2.ans.slice().sort((a,b)=>a-b);
+      const ok2 = a2.length===ans2.length && a2.every((v,i)=>v===ans2[i]);
+
+      const fb = $("#l2Fb", root);
+      fb.style.display="block";
+      fb.className = "feedback " + ((ok1 && ok2) ? "good" : "bad");
+      fb.innerHTML = `
+        <div class="title">${(ok1 && ok2) ? "✅ 情境題全對！" : "⛔ 還需要再想想"}</div>
+        <div>${ok1 ? "情境 1 正確。" : "情境 1 錯誤。"}<br/>${ok2 ? "情境 2 正確。" : "情境 2 錯誤。"}</div>
+        <div class="small" style="margin-top:8px;">
+          <strong>解析重點：</strong><br/>
+          ① 蒸散作用可造成向上拉力，影響水分上升運輸。<br/>
+          ② 葉片/氣孔狀態與天候會改變蒸散強弱，進而改變運輸速度。
+        </div>
+      `;
+      qOk = ok1 && ok2;
+      maybeEnableFinish();
+      toast(qOk ? "情境題通過！" : "再試一次，記得連結蒸散與拉力。", qOk ? "good" : "bad");
+    }
+
+    $("#l2Check", root).addEventListener("click", checkScenarios);
+
+    function maybeEnableFinish(){
+      $("#l2Finish", root).disabled = !(simRan && qOk);
+    }
+
+    $("#l2Finish", root).addEventListener("click", ()=>{
+      state.completed[1] = true;
+      state.passPoints[1] = 10;
+      renderMap(); updateHeaderButtons(); setLevelStatus();
+      toast("第 2 關通關！獲得 +10 分。","good");
+    });
+  }
+
+  /* =========================================
+     LEVEL 3: Animal structure
+  ========================================= */
+  function renderLevel3(root){
+    root.innerHTML = `
+      <div class="level-title">
+        <h2>第3關｜動物的運輸構造</h2>
+        <span class="tag">排序題</span>
+        <span class="tag">點擊揭示/配對</span>
+      </div>
+
+      <div class="kpi">
+        <div class="box"><span>本關通關分</span><strong class="mono">+10</strong></div>
+        <div class="box"><span>任務</span><strong class="mono">2</strong><span class="small">排序 + 瓣膜配對</span></div>
+      </div>
+
+      <div class="split">
+        <div class="panel">
+          <div class="note">
+            <strong>任務 1｜排序：</strong>把「血液在血管系統中」由心臟出發到回心臟的典型交換路徑排順序。<br/>
+            <span class="small">提示：動脈 → 微血管（交換） → 靜脈</span>
+          </div>
+
+          <div class="sortList" id="sortList"></div>
+
+          <div class="rowBtns">
+            <button class="ghost" id="sortCheck">✅ 檢查排序</button>
+            <button class="ghost" id="sortShuffle">🎲 重新打亂</button>
+          </div>
+
+          <div class="feedback" id="l3SortFb" style="display:none;"></div>
+        </div>
+
+        <div class="panel">
+          <div class="note">
+            <strong>任務 2｜瓣膜配對：</strong>點擊下方按鈕揭示提示，選出正確答案。<br/>
+            <span class="small">核心概念：血液維持「單向流動」，瓣膜用來「防止逆流」。</span>
+          </div>
+
+          <div class="panel" style="margin-top:12px;">
+            <div class="inline">
+              <button class="ghost" id="reveal1">👁️ 揭示提示：房室瓣</button>
+              <button class="ghost" id="reveal2">👁️ 揭示提示：半月瓣</button>
+            </div>
+            <div class="tip" id="l3Tip"></div>
+          </div>
+
+          <div class="qCard" id="l3Q"></div>
+
+          <div class="rowBtns">
+            <button class="primary" id="l3Finish" disabled>🏁 完成本關（+10）</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    /* Sort list */
+    const correct = ["動脈（離心）","微血管（物質交換）","靜脈（回心）"];
+    let items = ["微血管（物質交換）","靜脈（回心）","動脈（離心）"];
+
+    function renderSort(){
+      const list = $("#sortList", root);
+      list.innerHTML = "";
+      items.forEach((t, idx)=>{
+        const div = document.createElement("div");
+        div.className = "sortItem";
+        div.draggable = true;
+        div.dataset.idx = String(idx);
+        div.innerHTML = `
+          <div class="handle">≡</div>
+          <div><strong style="color:var(--text)">${idx+1}.</strong> <span style="color:var(--muted)">${t}</span></div>
+        `;
+        div.addEventListener("dragstart", e=>{
+          e.dataTransfer.setData("text/plain", String(idx));
+        });
+        div.addEventListener("dragover", e=>e.preventDefault());
+        div.addEventListener("drop", e=>{
+          e.preventDefault();
+          const from = Number(e.dataTransfer.getData("text/plain"));
+          const to = idx;
+          if(from===to) return;
+          const temp = items[from];
+          items.splice(from,1);
+          items.splice(to,0,temp);
+          renderSort();
+        });
+        list.appendChild(div);
+      });
+    }
+    renderSort();
+
+    $("#sortShuffle", root).addEventListener("click", ()=>{
+      items = items.sort(()=>Math.random()-0.5);
+      renderSort();
+      $("#l3SortFb", root).style.display="none";
+      toast("已打亂，重新排序。","warn");
+    });
+
+    let sortOk = false;
+    function checkSort(){
+      sortOk = items.join("|") === correct.join("|");
+      const fb = $("#l3SortFb", root);
+      fb.style.display="block";
+      fb.className = "feedback " + (sortOk ? "good" : "bad");
+      fb.innerHTML = `
+        <div class="title">${sortOk ? "✅ 排序正確" : "⛔ 排序不正確"}</div>
+        <div>${sortOk ? "你已正確排序：動脈 → 微血管（交換） → 靜脈。" : "再想想：物質交換主要發生在「微血管」。"}</div>
+        <div class="small" style="margin-top:8px;">解析：動脈把血液由心臟送出，微血管是交換站，靜脈把血液送回心臟。</div>
+      `;
+      maybeEnableFinish();
+      toast(sortOk ? "排序通過！" : "再調整一下順序。", sortOk ? "good":"bad");
+    }
+    $("#sortCheck", root).addEventListener("click", checkSort);
+
+    /* Reveal tips */
+    const tip = $("#l3Tip", root);
+    const revealed = {a:false,b:false};
+
+    $("#reveal1", root).addEventListener("click", ()=>{
+      revealed.a = true;
+      tip.classList.add("show");
+      tip.innerHTML = `<strong>房室瓣（提示）</strong><br/>位於心房與心室之間，功能是<strong>防止血液由心室回流到心房</strong>。`;
+      maybeEnableFinish();
+    });
+    $("#reveal2", root).addEventListener("click", ()=>{
+      revealed.b = true;
+      tip.classList.add("show");
+      tip.innerHTML = `<strong>半月瓣（提示）</strong><br/>位於心室與動脈（主動脈/肺動脈）交界，功能是<strong>防止血液由動脈回流到心室</strong>。`;
+      maybeEnableFinish();
+    });
+
+    /* Matching question */
+    const qBox = $("#l3Q", root);
+    qBox.innerHTML = `
+      <div class="qHead">
+        <div>
+          <div class="qid">L3Q</div>
+          <div class="qtxt">下列哪一句最能總結「瓣膜」存在的理由？</div>
+        </div>
+        <div class="pill"><span>單選</span></div>
+      </div>
+
+      <div class="opts">
+        ${[
+          "讓血液可以在心臟內自由來回混合",
+          "避免血液逆流，維持單向流動",
+          "讓血液停留更久以便吸收養分",
+          "增加血液中氧氣含量"
+        ].map((t,i)=>`
+          <label class="opt">
+            <input type="radio" name="l3" value="${i}" />
+            <div>${t}</div>
+          </label>
+        `).join("")}
+      </div>
+
+      <div class="rowBtns">
+        <button class="ghost" id="l3Check">✅ 檢查答案</button>
+        <button class="ghost" id="l3Hint">💡 提示</button>
+      </div>
+
+      <div class="tip" id="l3HintBox"></div>
+      <div class="feedback" id="l3Fb" style="display:none;"></div>
+    `;
+
+    $("#l3Hint", root).addEventListener("click", ()=>{
+      const hb = $("#l3HintBox", root);
+      hb.classList.add("show");
+      hb.innerHTML = `<strong>提示：</strong>把「單向」與「逆流」放進你的答案理由裡。`;
+    });
+
+    let valveOk = false;
+    $("#l3Check", root).addEventListener("click", ()=>{
+      const v = $("input[name='l3']:checked", root);
+      const fb = $("#l3Fb", root);
+      fb.style.display="block";
+      valveOk = !!(v && Number(v.value)===1);
+      fb.className = "feedback " + (valveOk ? "good" : "bad");
+      fb.innerHTML = `
+        <div class="title">${valveOk ? "✅ 答對" : "⛔ 答錯"}</div>
+        <div>解析：瓣膜（房室瓣/半月瓣）用來<strong>防止逆流</strong>，確保血液維持<strong>單向流動</strong>。</div>
+      `;
+      maybeEnableFinish();
+      toast(valveOk ? "瓣膜概念正確！" : "再想一次：瓣膜最重要功能是防逆流。", valveOk ? "good":"bad");
+    });
+
+    function maybeEnableFinish(){
+      const ok = sortOk && valveOk && (revealed.a || revealed.b);
+      $("#l3Finish", root).disabled = !ok;
+    }
+
+    $("#l3Finish", root).addEventListener("click", ()=>{
+      state.completed[2] = true;
+      state.passPoints[2] = 10;
+      renderMap(); updateHeaderButtons(); setLevelStatus();
+      toast("第 3 關通關！獲得 +10 分。","good");
+    });
+  }
+
+  /* =========================================
+     LEVEL 4: Animal transport
+  ========================================= */
+  function renderLevel4(root){
+    root.innerHTML = `
+      <div class="level-title">
+        <h2>第4關｜動物的運輸</h2>
+        <span class="tag">路徑任務</span>
+        <span class="tag">物質交換站</span>
+      </div>
+
+      <div class="kpi">
+        <div class="box"><span>本關通關分</span><strong class="mono">+10</strong></div>
+        <div class="box"><span>任務</span><strong class="mono">2</strong><span class="small">體循環 + 肺循環</span></div>
+      </div>
+
+      <div class="panel">
+        <div class="note">
+          <strong>玩法：</strong>請依序點擊「路徑節點」完成循環。當你點到交換站，會跳出提問：交換了什麼？<br/>
+          <span class="small">核心概念：體循環把含氧血送到身體交換；肺循環把缺氧血送到肺換氣再回心臟。</span>
+        </div>
+
+        <div class="pathGrid" style="margin-top:12px;">
+          <div class="pathBoard" id="sysBoard"></div>
+          <div class="pathBoard" id="pulBoard"></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="note"><strong>通關條件：</strong>兩個循環都完成，並在交換站回答正確。</div>
+
+        <div class="rowBtns">
+          <button class="primary" id="l4Finish" disabled>🏁 完成本關（+10）</button>
+        </div>
+      </div>
+    `;
+
+    const tasks = {
+      systemic: {
+        name:"體循環（含氧血→身體→回心）",
+        token:"含氧血",
+        tokenClass:"oxygen",
+        seq:[
+          {key:"LV", label:"左心室"},
+          {key:"AO", label:"主動脈"},
+          {key:"CAPB", label:"身體微血管（交換站）", exchange:true,
+            ask:"在身體組織交換站：哪些物質從血進入細胞？哪些從細胞進入血？",
+            answerKeywords:[["氧氣","養分"],["二氧化碳"]]
+          },
+          {key:"VEIN", label:"靜脈"},
+          {key:"RA", label:"右心房"}
+        ]
+      },
+      pulmonary: {
+        name:"肺循環（缺氧血→肺→回心）",
+        token:"缺氧血",
+        tokenClass:"",
+        seq:[
+          {key:"RV", label:"右心室"},
+          {key:"PA", label:"肺動脈"},
+          {key:"CAPL", label:"肺微血管/肺泡（交換站）", exchange:true,
+            ask:"在肺部交換站：哪些物質從肺泡進入血？哪些從血進入肺泡？",
+            answerKeywords:[["氧氣"],["二氧化碳"]]
+          },
+          {key:"PV", label:"肺靜脈"},
+          {key:"LA", label:"左心房"}
+        ]
+      }
+    };
+
+    const status = {
+      systemic:{i:0, done:false},
+      pulmonary:{i:0, done:false}
+    };
+
+    function renderBoard(id, taskKey){
+      const t = tasks[taskKey];
+      const box = $("#"+id, root);
+      box.innerHTML = `
+        <div style="display:flex;gap:10px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;">
+          <div>
+            <div style="font-weight:900">${t.name}</div>
+            <div class="small">依序點節點：${t.seq.map(x=>x.label).join(" → ")}</div>
+          </div>
+          <div class="token">
+            <div class="ball ${t.tokenClass}"></div>
+            <div>
+              <div style="font-weight:900">${t.token}</div>
+              <small>點節點前進</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="nodes" id="${taskKey}_nodes"></div>
+
+        <div class="rowBtns" style="margin-top:10px;">
+          <button class="ghost" id="${taskKey}_reset">🧽 重置此循環</button>
+        </div>
+
+        <div class="feedback" id="${taskKey}_fb" style="display:none;"></div>
+      `;
+
+      const nodesWrap = $("#"+taskKey+"_nodes", root);
+      t.seq.forEach((node, idx)=>{
+        const n = document.createElement("div");
+        n.className = "n";
+        n.dataset.task = taskKey;
+        n.dataset.idx = String(idx);
+        n.innerHTML = `<strong>${idx+1}</strong>｜${node.label}`;
+        n.addEventListener("click", ()=> onPick(taskKey, idx));
+        nodesWrap.appendChild(n);
+      });
+
+      $("#"+taskKey+"_reset", root).addEventListener("click", ()=>{
+        status[taskKey].i = 0;
+        status[taskKey].done = false;
+        $$("#"+taskKey+"_nodes .n", root).forEach(n=>n.classList.remove("ok","bad"));
+        $("#"+taskKey+"_fb", root).style.display = "none";
+        toast("已重置此循環。","warn");
+        maybeEnableFinish();
+      });
+    }
+
+    function askExchange(node){
+      const input = prompt(node.ask + "\n\n請用一句話回答（可包含關鍵詞：氧氣/養分/二氧化碳）。");
+      if(!input) return false;
+      const text = input.replace(/\s+/g,"").toLowerCase();
+      const groupA = node.answerKeywords[0].some(k=> text.includes(k));
+      const groupB = node.answerKeywords[1].some(k=> text.includes(k));
+      return groupA && groupB;
+    }
+
+    function onPick(taskKey, idx){
+      const t = tasks[taskKey];
+      const expect = status[taskKey].i;
+      const nodesEls = $$("#"+taskKey+"_nodes .n", root);
+      nodesEls.forEach(el=> el.classList.remove("bad"));
+
+      if(idx !== expect){
+        nodesEls[idx].classList.add("bad");
+        toast("順序不對喔！請依序完成路徑。","bad");
+        return;
+      }
+
+      nodesEls[idx].classList.add("ok");
+      status[taskKey].i++;
+
+      const node = t.seq[idx];
+      if(node.exchange){
+        const ok = askExchange(node);
+        const fb = $("#"+taskKey+"_fb", root);
+        fb.style.display = "block";
+        fb.className = "feedback " + (ok ? "good":"bad");
+        fb.innerHTML = `
+          <div class="title">${ok ? "✅ 交換站回答正確" : "⛔ 交換站回答需要修正"}</div>
+          <div class="small">
+            解析：身體組織交換—氧氣/養分由血→細胞，二氧化碳由細胞→血；肺部交換—氧氣由肺泡→血，二氧化碳由血→肺泡並呼出。
+          </div>
+        `;
+        if(!ok){
+          toast("交換站回答不完整，請重置後再挑戰。","bad");
+          status[taskKey].i = 0;
+          nodesEls.forEach(el=> el.classList.remove("ok"));
+          return;
+        }
+      }
+
+      if(status[taskKey].i >= t.seq.length){
+        status[taskKey].done = true;
+        const fb = $("#"+taskKey+"_fb", root);
+        fb.style.display = "block";
+        fb.className = "feedback good";
+        fb.innerHTML = `
+          <div class="title">✅ ${t.name} 完成！</div>
+          <div class="small">重點：循環路徑 + 交換站（微血管/肺泡）是理解物質交換的關鍵。</div>
+        `;
+        toast(`${t.name} 完成！`, "good");
+        maybeEnableFinish();
+      }
+    }
+
+    function maybeEnableFinish(){
+      $("#l4Finish", root).disabled = !(status.systemic.done && status.pulmonary.done);
+    }
+
+    renderBoard("sysBoard", "systemic");
+    renderBoard("pulBoard", "pulmonary");
+
+    $("#l4Finish", root).addEventListener("click", ()=>{
+      state.completed[3] = true;
+      state.passPoints[3] = 10;
+      renderMap(); updateHeaderButtons(); setLevelStatus();
+      toast("第 4 關通關！獲得 +10 分。","good");
+    });
+  }
+
+  /* =========================================
+     LEVEL 5: Final challenge
+  ========================================= */
+  function startLevel5Timer(root){
+    if(state.level5.timerId) return;
+    state.level5.started = true;
+    state.level5.startTs = Date.now();
+    state.level5.secondsLeft = 180;
+    state.level5.overtime = false;
+    state.level5.finished = false;
+
+    const timerEl = $("#l5Timer", root);
+    timerEl.textContent = formatTime(state.level5.secondsLeft);
+
+    state.level5.timerId = setInterval(()=>{
+      state.level5.secondsLeft -= 1;
+      timerEl.textContent = formatTime(state.level5.secondsLeft);
+      if(state.level5.secondsLeft <= 0){
+        state.level5.overtime = true;
+        timerEl.classList.add("bad");
+      }
+    }, 1000);
+  }
+  function stopLevel5Timer(){
+    if(state.level5.timerId){
+      clearInterval(state.level5.timerId);
+      state.level5.timerId = null;
+    }
+  }
+
+  function renderLevel5(root){
+    if(!state.completed[3]){
+      root.innerHTML = `
+        <div class="level-title">
+          <h2>第5關｜運輸大挑戰</h2>
+          <span class="tag">結算評量</span>
+        </div>
+        <div class="panel">
+          <div class="feedback bad">
+            <div class="title">🔒 尚未解鎖</div>
+            <div>請先完成第 1～4 關後再進入第 5 關。</div>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    root.innerHTML = `
+      <div class="level-title">
+        <h2>第5關｜運輸大挑戰 / 總結性評量</h2>
+        <span class="tag">混合題型</span>
+        <span class="tag">計時 180 秒（可超時扣分）</span>
+      </div>
+
+      <div class="kpi">
+        <div class="box"><span>計時器</span><strong id="l5Timer" class="mono">03:00</strong><span class="small">超時會變負數</span></div>
+        <div class="box"><span>第1~4關通關分</span><strong class="mono" id="l5PassPts">40</strong><span class="small">每關 +10</span></div>
+        <div class="box"><span>第5關目前得分</span><strong class="mono" id="l5NowScore">0</strong><span class="small">滿分 100</span></div>
+      </div>
+
+      <div class="panel">
+        <div class="note">
+          <strong>計分規則（本關每題滿分 10）：</strong><br/>
+          第一次答對=10；第二次=6；第三次=3；仍錯=0。每答錯一次額外 <strong>-2</strong>（最低不低於 0）。<br/>
+          <strong>計時加減分：</strong>剩餘每 10 秒 +1（上限 +10）；超時每 10 秒 -1（下限 -10）。
+        </div>
+        <div class="rowBtns">
+          <button class="primary" id="l5Start">⏱ 開始作答（開始計時）</button>
+          <button class="ghost" id="l5Reset">🧽 清空本關作答</button>
+          <button class="ghost" id="l5FinishBtn" disabled>🏁 交卷並結算</button>
+        </div>
+      </div>
+
+      <div id="l5Questions" style="margin-top:12px;"></div>
+
+      <div class="divider"></div>
+
+      <div class="report" id="l5Report" style="display:none;"></div>
+      <div class="footerSpace"></div>
+    `;
+
+    $("#l5PassPts", root).textContent = String(state.passPoints.reduce((a,b)=>a+b,0));
+
+    const qWrap = $("#l5Questions", root);
+    qWrap.innerHTML = "";
+    Q.forEach(q=>{
+      const card = document.createElement("div");
+      card.className = "qCard";
+      card.dataset.qid = q.id;
+      card.innerHTML = renderQuestionCard(q);
+      qWrap.appendChild(card);
+      wireQuestion(card, q, root);
+    });
+
+    const timerEl = $("#l5Timer", root);
+    timerEl.textContent = formatTime(state.level5.started ? state.level5.secondsLeft : 180);
+    if(state.level5.started && state.level5.overtime) timerEl.classList.add("bad");
+
+    if(state.level5.started && !state.level5.timerId && !state.level5.finished){
+      state.level5.timerId = setInterval(()=>{
+        state.level5.secondsLeft -= 1;
+        timerEl.textContent = formatTime(state.level5.secondsLeft);
+        if(state.level5.secondsLeft <= 0){
+          state.level5.overtime = true;
+          timerEl.classList.add("bad");
+        }
+      }, 1000);
+    }
+
+    $("#l5Start", root).addEventListener("click", ()=>{
+      if(state.level5.started){ toast("計時已開始。","warn"); return; }
+      startLevel5Timer(root);
+      toast("開始作答！計時啟動。","good");
+      $("#l5Start", root).disabled = true;
+      enableQuestionInputs(qWrap, true);
+    });
+
+    $("#l5Reset", root).addEventListener("click", ()=>{
+      if(!confirm("要清空第 5 關作答與分數嗎？（計時也會重置）")) return;
+      stopLevel5Timer();
+      state.level5 = { started:false, startTs:null, timerId:null, secondsLeft:180, qAttempts:{}, qScore:{}, qWrong:{}, qDone:{}, overtime:false, finished:false };
+      renderLevel();
+      toast("第 5 關已清空。","good");
+    });
+
+    $("#l5FinishBtn", root).addEventListener("click", ()=>{ finishLevel5(root); });
+
+    enableQuestionInputs(qWrap, state.level5.started && !state.level5.finished);
+    $("#l5Start", root).disabled = state.level5.started;
+    updateL5ScoreUI(root);
+    updateFinishButton(root);
+
+    if(state.level5.finished){
+      showReport(root);
+      enableQuestionInputs(qWrap, false);
+      $("#l5FinishBtn", root).disabled = true;
+      $("#l5Start", root).disabled = true;
+    }
+  }
+
+  function enableQuestionInputs(qWrap, enabled){
+    $$("input, textarea, button[data-action]", qWrap).forEach(el=>{
+      if(el.dataset.action === "hint") return;
+      el.disabled = !enabled;
+    });
+  }
+
+  function renderQuestionCard(q){
+    const typeLabel = q.type==="single" ? "單選" : q.type==="multi" ? "多選" : q.type==="dragmatch" ? "拖放配對" : q.type==="order" ? "排序" : q.type==="short" ? "短答" : "題目";
+    const head = `
+      <div class="qHead">
+        <div>
+          <div class="qid">${q.id}｜${typeLabel}</div>
+          <div class="qtxt">${q.stem}</div>
+        </div>
+        <div class="pill">
+          <span>作答次數</span>
+          <strong class="mono" data-attempts="${q.id}">0</strong>
+        </div>
+      </div>
+    `;
+    let body = "";
+
+    if(q.type==="single" || q.type==="multi"){
+      const multi = q.type==="multi";
+      body = `
+        <div class="opts">
+          ${q.opts.map((t,i)=>`
+            <label class="opt">
+              <input type="${multi ? "checkbox" : "radio"}" name="${q.id}" value="${i}" />
+              <div>${t}</div>
+            </label>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    if(q.type==="dragmatch"){
+      body = `
+        <div class="note small" style="margin-top:8px;">把左側名詞拖到右側描述欄位。</div>
+        <div class="split" style="margin-top:10px;">
+          <div class="panel">
+            <div class="dragRow">
+              ${q.pairs.map(p=>`<div class="chip" draggable="true" data-drag="${p.left}" data-q="${q.id}">${p.left}</div>`).join("")}
+            </div>
+          </div>
+          <div class="panel" style="display:grid;gap:10px;">
+            ${q.pairs.map((p,idx)=>`
+              <div class="dropZone" data-zone="${q.id}:${idx}">
+                <div class="label">${p.right}</div>
+                <div class="slot">拖到這裡</div>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    if(q.type==="order"){
+      body = `
+        <div class="opts">
+          ${q.items.map((t,i)=>`
+            <label class="opt">
+              <input type="radio" name="${q.id}" value="${i}" />
+              <div>${t}</div>
+            </label>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    if(q.type==="short"){
+      body = `
+        <div style="margin-top:10px;">
+          <textarea rows="3" name="${q.id}" placeholder="請用 1~2 句話回答，建議包含關鍵詞。"></textarea>
+        </div>
+        <div class="small" style="margin-top:8px;">關鍵詞提示：<span class="mono">${q.keywords.join("、")}</span></div>
+      `;
+    }
+
+    const foot = `
+      <div class="rowBtns">
+        <button class="ghost" data-action="hint" data-qid="${q.id}">💡 提示</button>
+        <button class="primary" data-action="submit" data-qid="${q.id}">✅ 送出此題</button>
+      </div>
+      <div class="tip" id="${q.id}_hint"></div>
+      <div class="feedback" id="${q.id}_fb" style="display:none;"></div>
+    `;
+
+    return head + body + foot;
+  }
+
+  function wireQuestion(card, q, root){
+    const hintBtn = card.querySelector(`button[data-action="hint"][data-qid="${q.id}"]`);
+    hintBtn.addEventListener("click", ()=>{
+      const box = card.querySelector(`#${q.id}_hint`);
+      box.classList.add("show");
+      box.innerHTML = `<strong>提示：</strong>${q.hint}`;
+    });
+
+    if(q.type==="dragmatch"){
+      const chips = $$('.chip[data-q="'+q.id+'"]', card);
+      const zones = $$(`.dropZone[data-zone^="${q.id}:"]`, card);
+      const placed = {};
+      chips.forEach(ch=>{
+        ch.addEventListener("dragstart", e=>{
+          e.dataTransfer.setData("text/plain", ch.dataset.drag);
+        });
+      });
+      zones.forEach(z=>{
+        z.addEventListener("dragover", e=>e.preventDefault());
+        z.addEventListener("drop", e=>{
+          e.preventDefault();
+          const val = e.dataTransfer.getData("text/plain");
+          placed[z.dataset.zone] = val;
+          z.querySelector(".slot").textContent = "已放入：" + val;
+          toast(`已放入：${val}`, "good");
+        });
+      });
+      card._dragPlaced = placed;
+    }
+
+    const submitBtn = card.querySelector(`button[data-action="submit"][data-qid="${q.id}"]`);
+    submitBtn.addEventListener("click", ()=>{
+      if(!state.level5.started){
+        toast("請先按「開始作答」啟動計時。", "warn");
+        return;
+      }
+      if(state.level5.finished){
+        toast("已交卷，不能再作答。", "warn");
+        return;
+      }
+      evaluateQuestion(card, q, root);
+    });
+
+    const attemptsEl = card.querySelector(`[data-attempts="${q.id}"]`);
+    attemptsEl.textContent = String(state.level5.qAttempts[q.id] || 0);
+
+    if(state.level5.qDone[q.id]){
+      submitBtn.disabled = true;
+      const fb = card.querySelector(`#${q.id}_fb`);
+      fb.style.display = "block";
+      fb.className = "feedback good";
+      fb.innerHTML = `
+        <div class="title">✅ 已完成此題</div>
+        <div class="small">本題得分：<strong class="mono">${state.level5.qScore[q.id] ?? 0}</strong>／10</div>
+        <div class="small" style="margin-top:6px;"><strong>解析：</strong>${q.explain}</div>
+      `;
+      $$("input, textarea", card).forEach(el=> el.disabled = true);
+    }
+  }
+
+  function readSelections(q, rootEl){
+    const sel = $$(`input[name="${q.id}"]:checked`, rootEl)
+      .map(n=>Number(n.value))
+      .sort((a,b)=>a-b);
+    return sel;
+  }
+
+  function normalizeText(s){
+    return (s||"")
+      .toLowerCase()
+      .replace(/\s+/g,"")
+      .replace(/[，。；、！!？?（）()「」"']/g,"");
+  }
+
+  function evaluateQuestion(card, q, root){
+    const qid = q.id;
+    const prevAttempts = state.level5.qAttempts[qid] || 0;
+    const prevWrong = state.level5.qWrong[qid] || 0;
+
+    if(prevAttempts >= 3){
+      toast("此題已達 3 次作答上限。","warn");
+      return;
+    }
+
+    let correct = false;
+
+    if(q.type==="single"){
+      const s = readSelections(q, card);
+      correct = (s.length===1 && s[0]===q.ans[0]);
+    }
+    if(q.type==="multi"){
+      const s = readSelections(q, card);
+      const ans = q.ans.slice().sort((a,b)=>a-b);
+      correct = (s.length===ans.length && s.every((v,i)=>v===ans[i]));
+    }
+    if(q.type==="order"){
+      const s = readSelections(q, card);
+      correct = (s.length===1 && s[0]===q.correctIndex);
+    }
+    if(q.type==="dragmatch"){
+      const placed = card._dragPlaced || {};
+      const okAll = q.pairs.every((p, idx)=>{
+        const zoneKey = `${q.id}:${idx}`;
+        return placed[zoneKey] === p.left;
+      });
+      const filled = q.pairs.every((p, idx)=> (card._dragPlaced||{})[`${q.id}:${idx}`]);
+      correct = okAll && filled;
+    }
+    if(q.type==="short"){
+      const ta = card.querySelector(`textarea[name="${q.id}"]`);
+      const text = normalizeText(ta ? ta.value : "");
+      correct = q.keywords.every(k => text.includes(normalizeText(k)));
+    }
+
+    const attemptsNow = prevAttempts + 1;
+    state.level5.qAttempts[qid] = attemptsNow;
+
+    if(!correct) state.level5.qWrong[qid] = prevWrong + 1;
+    else state.level5.qWrong[qid] = prevWrong;
+
+    const fb = card.querySelector(`#${qid}_fb`);
+    fb.style.display = "block";
+
+    const attemptsEl = card.querySelector(`[data-attempts="${qid}"]`);
+    attemptsEl.textContent = String(attemptsNow);
+
+    if(correct){
+      const base = baseScoreByAttempts(attemptsNow);
+      const wrongs = state.level5.qWrong[qid] || 0;
+      const earned = clamp(base - wrongs*2, 0, 10);
+      state.level5.qScore[qid] = earned;
+      state.level5.qDone[qid] = true;
+
+      fb.className = "feedback good";
+      fb.innerHTML = `
+        <div class="title">✅ 正確！</div>
+        <div class="small">
+          第 ${attemptsNow} 次答對：基礎分 <strong class="mono">${base}</strong>，
+          錯誤扣分 <strong class="mono">-${wrongs*2}</strong>，
+          本題得分 <strong class="mono">${earned}</strong>／10
+        </div>
+        <div class="small" style="margin-top:6px;"><strong>解析：</strong>${q.explain}</div>
+      `;
+
+      $$("input, textarea", card).forEach(el=> el.disabled = true);
+      card.querySelector(`button[data-action="submit"][data-qid="${qid}"]`).disabled = true;
+      toast(`答對 ${qid}（+${earned}）`, "good");
+    }else{
+      const left = 3 - attemptsNow;
+      fb.className = "feedback bad";
+      fb.innerHTML = `
+        <div class="title">⛔ 不正確</div>
+        <div class="small">已作答 <strong class="mono">${attemptsNow}</strong> 次，剩餘 <strong class="mono">${left}</strong> 次。</div>
+        <div class="small" style="margin-top:6px;"><strong>提醒：</strong>${q.hint}</div>
+        <div class="small" style="margin-top:6px;"><strong>解析（先看方向）：</strong>${q.explain}</div>
+      `;
+      toast(`再試一次：${qid}`, "bad");
+
+      if(attemptsNow >= 3){
+        state.level5.qScore[qid] = 0;
+        state.level5.qDone[qid] = true;
+        $$("input, textarea", card).forEach(el=> el.disabled = true);
+        card.querySelector(`button[data-action="submit"][data-qid="${qid}"]`).disabled = true;
+        fb.innerHTML = `
+          <div class="title">⛔ 已達 3 次上限，本題 0 分</div>
+          <div class="small">建議：回看提示與解析，抓住關鍵字（如「蒸散拉力」「供應部/需求部」「單向/逆流」「體循環/肺循環」）。</div>
+          <div class="small" style="margin-top:6px;"><strong>解析：</strong>${q.explain}</div>
+        `;
+      }
+    }
+
+    updateL5ScoreUI(root);
+    updateFinishButton(root);
+  }
+
+  function computeLevel5Raw(){
+    const scores = Object.values(state.level5.qScore);
+    const sum = scores.reduce((a,b)=>a+(Number(b)||0),0);
+    return clamp(sum, 0, 100);
+  }
+
+  function computeTimeBonus(){
+    const sec = state.level5.secondsLeft;
+    const unit = Math.floor(sec / 10);
+    return clamp(unit, -10, 10);
+  }
+
+  function computeTotal(){
+    const pass = state.passPoints.reduce((a,b)=>a+b,0);
+    const l5 = computeLevel5Raw();
+    const bonus = computeTimeBonus();
+    const total = clamp(pass + l5 + bonus, 0, 150);
+    return { pass, l5, bonus, total, grade: gradeOf(total) };
+  }
+
+  function updateL5ScoreUI(root){
+    const el = $("#l5NowScore", root);
+    if(el) el.textContent = String(computeLevel5Raw());
+  }
+
+  function updateFinishButton(root){
+    const allDone = Q.every(q => state.level5.qDone[q.id]);
+    const btn = $("#l5FinishBtn", root);
+    if(!btn) return;
+    btn.disabled = !(state.level5.started && allDone && !state.level5.finished);
+  }
+
+  function finishLevel5(root){
+    stopLevel5Timer();
+    state.level5.finished = true;
+
+    const result = computeTotal();
+    state.completed[4] = true;
+
+    const best = loadBest();
+    const nowDate = new Date().toLocaleString("zh-TW", {hour12:false});
+    const payload = { total: result.total, grade: result.grade, date: nowDate };
+
+    if(!best || payload.total > best.total){
+      saveBest(payload);
+      toast("🎉 新的最佳成績已保存！", "good");
+    }else{
+      toast("已結算並保存本次成績（未超過最佳）。", "good");
+    }
+    renderBest();
+
+    enableQuestionInputs($("#l5Questions", root), false);
+    $("#l5FinishBtn", root).disabled = true;
+
+    showReport(root);
+    renderMap(); updateHeaderButtons(); setLevelStatus();
+  }
+
+  function showReport(root){
+    const rep = $("#l5Report", root);
+    rep.style.display = "block";
+
+    const r = computeTotal();
+    const wrongList = Q
+      .filter(q => (state.level5.qScore[q.id] || 0) === 0)
+      .map(q => q.id + "：" + q.stem);
+
+    const rows = Q.map(q=>{
+      const sc = state.level5.qScore[q.id] ?? 0;
+      const at = state.level5.qAttempts[q.id] ?? 0;
+      const wg = state.level5.qWrong[q.id] ?? 0;
+      const ok = sc > 0;
+      return `
+        <tr>
+          <td><span class="chipMini ${ok ? "good":"bad"}">${q.id}</span></td>
+          <td>${at}</td>
+          <td>${wg}</td>
+          <td><strong class="mono" style="color:var(--text)">${sc}</strong></td>
+          <td class="small">${q.explain}</td>
+        </tr>
+      `;
+    }).join("");
+
+    rep.innerHTML = `
+      <div style="display:flex;gap:10px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;">
+        <div>
+          <div style="font-weight:900;font-size:16px;">📄 成績單</div>
+          <div class="small">等第：<strong style="color:var(--text)">${r.grade}</strong>｜總分：<strong class="mono" style="color:var(--text)">${r.total}</strong> / 150</div>
+          <div class="small" style="margin-top:6px;">
+            通關分：<strong class="mono" style="color:var(--text)">${r.pass}</strong>｜
+            第5關：<strong class="mono" style="color:var(--text)">${r.l5}</strong>｜
+            計時加減：<strong class="mono" style="color:var(--text)">${r.bonus >= 0 ? ("+"+r.bonus) : r.bonus}</strong>
+          </div>
+        </div>
+
+        <div class="pill">
+          <span>計時</span>
+          <strong class="mono">${formatTime(state.level5.secondsLeft)}</strong>
+          <span class="small">${state.level5.overtime ? "（超時）" : "（剩餘）"}</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="panel">
+        <div class="note">
+          <strong>錯題清單（本題 0 分視為需要回顧）：</strong><br/>
+          ${wrongList.length ? wrongList.map(x=>`• ${x}`).join("<br/>") : "🎉 本次沒有 0 分題目！"}
+        </div>
+      </div>
+
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>題號</th>
+            <th>作答次數</th>
+            <th>錯誤次數</th>
+            <th>得分</th>
+            <th>解析（複習用）</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+
+      <div class="rowBtns" style="margin-top:12px;">
+        <button class="primary" id="btnReplayL5">🔁 只重玩第5關（保留最佳成績）</button>
+        <button class="ghost" id="btnPrint">🖨️ 列印 / 存成 PDF</button>
+      </div>
+
+      <div class="note" style="margin-top:10px;">
+        <strong>複習重點提示：</strong><br/>
+        植物：木質部（水/無機鹽、常向上）、韌皮部（養分、供應部↔需求部可雙向）、蒸散拉力。<br/>
+        動物：瓣膜防逆流維持單向；體循環/肺循環路徑與交換站（微血管/肺泡）的物質交換。
+      </div>
+    `;
+
+    const btnReplay = $("#btnReplayL5", root);
+    btnReplay.addEventListener("click", ()=>{
+      if(!confirm("確定只重玩第 5 關嗎？第 1～4 關通關狀態會保留。")) return;
+      replayLevel5Only();
+    });
+
+    $("#btnPrint", root).addEventListener("click", ()=> window.print());
+  }
+
+  function replayLevel5Only(){
+    stopLevel5Timer();
+    state.level5 = { started:false, startTs:null, timerId:null, secondsLeft:180, qAttempts:{}, qScore:{}, qWrong:{}, qDone:{}, overtime:false, finished:false };
+    state.completed[4] = false;
+    state.level = 5;
+    renderLevel(); renderMap(); updateHeaderButtons(); setLevelStatus();
+    toast("已重置第 5 關。按「開始作答」重新挑戰！", "good");
+  }
+
+  /* ---------- Init ---------- */
+  renderBest();
+  renderLevel();
+  renderMap();
+  updateHeaderButtons();
+  setLevelStatus();
+})();
+</script>
+
+</body>
+</html>
